@@ -14,6 +14,9 @@ local cmp_select = { behavior = cmp.SelectBehavior.Select }
 --})
 
 cmp.setup({
+	sources = {
+		{ name = 'nvim_lsp' },
+	},
 	window = {
 		completion = cmp.config.window.bordered(),
 		documentation = cmp.config.window.bordered(),
@@ -24,9 +27,11 @@ cmp.setup({
 		['<C-y>'] = cmp.mapping.confirm({ select = true }),
 		['<C-Space>'] = cmp.mapping.complete(),
 	}),
-	sources = {
-		{ name = 'lsp-zero' },
-	}
+    snippet = {
+        expand = function(args)
+            require('lspsnip').lsp_expand(args.body)
+        end,
+    },
 })
 
 -- Disable sign icons
