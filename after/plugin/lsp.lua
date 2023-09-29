@@ -29,7 +29,7 @@ cmp.setup({
 	}),
     snippet = {
         expand = function(args)
-            require('lspsnip').lsp_expand(args.body)
+            require('luasnip').lsp_expand(args.body)
         end,
     },
 })
@@ -56,7 +56,7 @@ lsp.on_attach(function(client, bufnr)
 end)
 require('mason').setup({})
 require('mason-lspconfig').setup({
-	ensure_installed = { 'rust_analyzer', 'pyright' },
+	ensure_installed = { 'rust_analyzer', 'pyright', 'gopls', 'lua_ls' },
 	handlers = {
 		lsp.default_setup,
 	},
