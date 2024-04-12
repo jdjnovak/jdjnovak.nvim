@@ -12,6 +12,11 @@ return {
             require 'nordic' .load()
         end
 	},
+    {
+        'jacoborus/tender.vim',
+        lazy = false,
+        priority = 1000
+    },
 	{
 		'nvim-treesitter/nvim-treesitter',
 		build = ':TSUpdate',
@@ -22,7 +27,7 @@ return {
 		'VonHeikemen/lsp-zero.nvim',
 		branch = 'v3.x',
 	},
-	{ 
+	{
 		'williamboman/mason.nvim',
 		ui = {
 			icons = {
