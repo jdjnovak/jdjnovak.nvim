@@ -12,7 +12,7 @@ local cmp_select = { behavior = cmp.SelectBehavior.Select }
 	--['<C-y>'] = cmp.mapping.confirm({ select = true }),
 	--['<C-Space>'] = cmp.mapping.complete(),
 --})
-
+--lsp.configure('gdscript', {
 cmp.setup({
 	sources = {
 		{ name = 'nvim_lsp' },
@@ -54,10 +54,26 @@ lsp.on_attach(function(client, bufnr)
 	vim.keymap.set("n", "<leader>le", function() vim.lsp.buf.rename() end, opts)
 	vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
 end)
+
+local gdport = os.getenv('GDScript_Port') or '6005'
+local gdcmd = {'ncat', '127.0.0.1', gdport}
+local gdpipe = [[\\.\pipe\godot.pipe]]
+
 require('mason').setup({})
 require('mason-lspconfig').setup({
 	ensure_installed = { 'rust_analyzer', 'pyright', 'gopls', 'lua_ls' },
 	handlers = {
-		lsp.default_setup,
+		--lsp.default_setup,
+        function(server_name)
+            require('lspconfig')[server_name].setup({})
+        end,
+        require('lspconfig').gdscript.setup({
+            cmd = gdcmd,
+            --root_dir = require('lspconfig.util').root_pattern('project.godot', '.git'),
+            on_attach = function(client, bufnr)
+                vim.api.nvim_command([[echo serverstart(']] .. gdpipe .. [[')]])
+            end
+        })
 	},
 })
+
