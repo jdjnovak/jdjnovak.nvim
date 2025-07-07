@@ -55,25 +55,71 @@ lsp.on_attach(function(client, bufnr)
 	vim.keymap.set("i", "<C-h>", function() vim.lsp.buf.signature_help() end, opts)
 end)
 
-local gdport = os.getenv('GDScript_Port') or '6005'
-local gdcmd = {'ncat', '127.0.0.1', gdport}
-local gdpipe = [[\\.\pipe\godot.pipe]]
+local uname = vim.loop.os_uname()
+local OS = uname.sysname
 
-require('mason').setup({})
-require('mason-lspconfig').setup({
-	ensure_installed = { 'rust_analyzer', 'pyright', 'gopls', 'lua_ls' },
-	handlers = {
-		--lsp.default_setup,
-        function(server_name)
-            require('lspconfig')[server_name].setup({})
-        end,
-        require('lspconfig').gdscript.setup({
-            cmd = gdcmd,
-            --root_dir = require('lspconfig.util').root_pattern('project.godot', '.git'),
-            on_attach = function(client, bufnr)
-                vim.api.nvim_command([[echo serverstart(']] .. gdpipe .. [[')]])
-            end
-        })
-	},
-})
-
+if OS:find 'Windows' and true then
+    local gdport = os.getenv('GDScript_Port') or '6005'
+    local gdcmd = {'nc', '127.0.0.1', gdport}
+    local gdpipe = [[\\.\pipe\godot.pipe]]
+    
+    require('mason').setup({})
+    require('mason-lspconfig').setup({
+    	ensure_installed = { 'rust_analyzer', 'pyright', 'gopls', 'lua_ls' },
+    	handlers = {
+    		--lsp.default_setup,
+            function(server_name)
+                require('lspconfig')[server_name].setup({})
+            end,
+            require('lspconfig').gdscript.setup({
+                cmd = gdcmd,
+                --root_dir = require('lspconfig.util').root_pattern('project.godot', '.git'),
+                on_attach = function(client, bufnr)
+                    print("Starting Godot LSP for windows")
+                    vim.api.nvim_command([[echo serverstart(']] .. gdpipe .. [[')]])
+                end
+            })
+    	},
+    })
+else
+    --local gdport = os.getenv('GDScript_Port') or '6005'
+    --local gdcmd = vim.lsp.rpc.connect('127.0.0.1', gdport)
+    --local gdpipe = '/tmp/godot.pipe'
+    
+    require('mason').setup({})
+    require('mason-lspconfig').setup({
+    	ensure_installed = { 'rust_analyzer', 'pyright', 'gopls', 'lua_ls' },
+    	handlers = {
+    		--lsp.default_setup,
+            function(server_name)
+                require('lspconfig')[server_name].setup({})
+            end,
+            --require('lspconfig').gdscript.setup({
+                --cmd = gdcmd,
+                --root_dir = require('lspconfig.util').root_pattern('project.godot', '.git'),
+                --on_attach = function(client, bufnr)
+                    --vim.api.nvim_command('echo serverstart("'..gdpipe..'")')
+                --end
+            --})
+    	},
+    })
+    require("lspconfig")["gdscript"].setup({
+        name = "godot",
+        cmd = vim.lsp.rpc.connect("127.0.0.1", 6005),
+    })
+    local dap = require("dap")
+    dap.adapters.godot = {
+        type = "server",
+        host = "127.0.0.1",
+        port = 6006,
+    }
+    dap.configurations.gdscript = {
+        {
+            type = "godot",
+            request = "launch",
+            name = "Launch scene",
+            project = "${workspaceFolder}",
+            launch_scene = true,
+        }
+    }
+end
